@@ -639,40 +639,50 @@ function setCluster(ctrl_node, device, cluster){
 
 
 function getCommands(){
-    //console.log('getCommands')
+    console.log('getCommands')
     ctrl_node = document.getElementById('node-input-controller').value
     device = document.getElementById('node-input-device').value
     cluster = document.getElementById('node-input-cluster').value
     let simpleMode = document.getElementById("node-input-simpleMode")
+    commands = []
     if ((ctrl_node != '_ADD_' || ctrl_node != undefined) && (device != undefined || device != '__SELECT__') && (cluster != undefined || cluster != '__SELECT__')){
-        url =`_mattercontroller/${ctrl_node}/device/${device}/cluster/${cluster}/commands`
-        $.get(url, function(r) {
-            var commands = document.getElementById("node-input-command");
-            removeOptions(commands)
-            var option = document.createElement("option");
-            option.text = '--SELECT--'
-            option.value = undefined
-            commands.add(option)
-            r.forEach(d => {
-                if (simpleMode.checked){
-                    if (simpleCommands[cluster].includes(d)) {
-                        var option = document.createElement("option");
-                        option.text = d
-                        option.value = d
-                        option.id = d
-                        commands.add(option);
-                    }
-                } else {
-                    var option = document.createElement("option");
-                    option.text = d
-                    option.value = d
-                    option.id = d
-                    commands.add(option);
-                }
-            });
+      url =`_mattercontroller/${ctrl_node}/device/${device}/cluster/${cluster}/commands`
+      $.get(url, function(r) {
+          //var commands = document.getElementById("node-input-command");
+          //removeOptions(commands)
+          //var option = document.createElement("option");
+          //option.text = '--SELECT--'
+          //option.value = undefined
+          //commands.add(option)
+          console.log(r)
+          r.forEach(d => {
+              if (simpleMode.checked){
+                  if (simpleCommands[cluster].includes(d)) {
+                      var option = {}
+                      option.label = d
+                      option.value = d
+                      option.hasValue = false
+                      commands.push(option);
+                  }
+              } else {
+                var option = {}
+                option.label = d
+                option.value = d
+                option.hasValue = false
+                commands.push(option);
+              }
+          });
+        commands = commands.concat(['msg', 'flow', 'global', 'jsonata', 'env'],)
+        console.log(commands)
+        $('#node-input-command').typedInput({
+            types: commands,
+            typeField: $('#node-input-commandType')
         })
+      })
     }
 }
+
+
 function setCommand(ctrl_node, device, cluster, command){
     //console.log(`setCommand , ${ctrl_node}, ${device}, ${cluster}, ${command}`)
     let simpleMode = document.getElementById("node-input-simpleMode")

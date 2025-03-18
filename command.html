@@ -14,6 +14,7 @@
             endpoint: {value:""},
             cluster: {value:""},
             command: {value:""},
+            commandType: {value: ""},
             data: {value:"{}"},
             dataType: {value:""},
             simpleMode: {value: "true"}
@@ -36,12 +37,16 @@
             }
             if (this.command.length != 0){
                 setCommand(this.controller, this.device, this.cluster, this.command);
-            } 
+            }
+            //$('#node-input-command').typedInput({
+            //    types: ['msg', 'flow', 'global', 'jsonata', 'env'],
+            //    typeField: $('node-input-commandType')
+            //})
             $('#refresh-devices').on("click", getDevices);
             $('#refresh-clusters').on("click", getClusters);
             $('#refresh-commands').on("click", getCommands);
             $('#refresh-sample').on("click", getCommandOpts);
-            $('node-input-command').on("changed", getCommandOpts);
+            $('#node-input-command').on("changed", getCommandOpts);
         },
         oneditsave: function() {
             let el = document.getElementById('node-input-device');
@@ -84,8 +89,8 @@
     </div>
     <div class="form-row">
         <label for="node-input-command">Command</label>
-        <select type="text" id="node-input-command" style="width:50%;" >
-        </select>
+        <input type="text" id="node-input-command" style="width:50%;" >
+        <input type="hidden" id="node-input-commandType">
         <a id="refresh-commands" class="btn"><i class="fa fa-refresh"></i></a>
     </div>
     <div class="form-row">
