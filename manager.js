@@ -102,7 +102,7 @@ module.exports =  function(RED) {
                                 msg.payload = "Device Removed"
                                 node.send(msg)
                                 node.status({})
-                            })
+                            }).catch((error) => {node.error(error); node.status({})})
                         }).catch((error) => {node.error(error); node.status({})})
                     }).catch((error) => {node.error(error); node.status({})})
                     break;

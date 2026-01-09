@@ -64,7 +64,7 @@ RED.httpAdmin.get('/_mattercontroller/:id/devices/', RED.auth.needsPermission('a
                             listComplete = true
                         })
                 }
-            })
+            }).catch((e) => ctrl_node.error(e))
         })
         listReadytoSend(res)
         
@@ -97,7 +97,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/clusters', RED.auth.needs
                 clusterList[c.id] = c.name
             })
             res.send(clusterList)
-        })
+        }).catch((e) => ctrl_node.error(e))
     }
     else {
         res.sendStatus(404);  
@@ -114,7 +114,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/commands', 
             let ep = conn.getDeviceById(epID)
             cmds = ep.getClusterClientById(Number(req.params.clid)).commands
             res.send(Object.keys(cmds))
-        })
+        }).catch((e) => ctrl_node.error(e))
     }
     else {
         res.sendStatus(404);  
@@ -138,7 +138,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes'
             let ep = conn.getDeviceById(epID)
             atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
             res.send(Object.keys(atrs))
-        })
+        }).catch((e) => ctrl_node.error(e))
     }
     else {
         res.sendStatus(404);  
@@ -162,7 +162,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes_
                 }
             })
             res.send(response)
-        })
+        }).catch((e) => ctrl_node.error(e))
     }
     else {
         res.sendStatus(404);  
@@ -180,7 +180,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/events', RE
             let ep = conn.getDeviceById(epID)
             events = ep.getClusterClientById(Number(req.params.clid)).events
             res.send(Object.keys(events))
-        })
+        }).catch((e) => ctrl_node.error(e))
     }
     else {
         res.sendStatus(404);  
