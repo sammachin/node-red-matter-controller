@@ -14,14 +14,18 @@
             endpoint: {value:""},
             cluster: {value:""},
             event: {value:""},
+            simpleMode: {value: "true"},
             topic: {value:""}
         },
         paletteLabel: "Event",
         label: function() {
-            let defaultName = `${this.deviceName} | ${this.event}`
-            return this.name || defaultName || "Event";
+            if (this.name) return this.name
+            if (isRealValue(this.deviceName) && isRealValue(this.event))
+                return this.deviceName + ' | ' + this.event
+            return "Event"
         },
         oneditprepare: function() {
+            var _initDone = false
             if (this.device.length != 0){
                 setDevice(this.controller, this.device)
             } 
@@ -34,11 +38,14 @@
             $('#refresh-devices').on("click", getDevices);
             $('#refresh-clusters').on("click", getClusters);
             $('#refresh-event').on("click", getEvents);
+            $('#node-input-controller').on("change", function() { if (_initDone) getDevices() });
+            $('#node-input-device').on("change", function() { if (_initDone) getClusters() });
+            $('#node-input-cluster').on("change", function() { if (_initDone) getEvents() });
+            setTimeout(function() { _initDone = true }, 500);
 
         },
         oneditsave: function() {
-            let el = document.getElementById('node-input-device');
-            this.deviceName = el.options[el.selectedIndex].innerHTML;
+            this.deviceName = getSelectedText('node-input-device')
         }
     });
 </script>
@@ -88,6 +95,19 @@
 </script>
 
 <script type="text/x-red" data-help-name="matterevent">
-    <p>Receive Events from a Device</p>
+    <p>Receive Events from a Matter Device</p>
+    <h3>Details</h3>
+    <p>Events are one-shot notifications emitted by a device cluster when something
+    discrete happens, such as a button press, a sensor trigger, or a state transition.
+    Unlike <b>Subscribe</b> (which monitors continuous attribute changes), an Event fires
+    only when the device explicitly reports it.</p>
+    <p>Select the device, cluster, and event to listen for. When the event fires, the
+    node outputs a message with the event data in <code>msg.payload</code>.</p>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>The event data reported by the device</dd>
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd>The configured topic string</dd>
+    </dl>
 </script>
 

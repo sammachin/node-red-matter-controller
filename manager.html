@@ -8,7 +8,8 @@
         defaults: {
             name: {value:""},
             controller: { value: "", type: "mattercontroller", required: true },
-            method: {value:""},
+            method: {value:"commissionDevice"},
+            methodType: {value: 'str'},
             code: {value:""},
             codeType: {value: 'str'},
             deviceid: {value:""},
@@ -21,13 +22,6 @@
         },
         paletteLabel: "Device Management",
         oneditprepare: function() {
-            var makeTypedInputOpt = function (label, value) {
-                return {
-                    value: value,
-                    label: label,
-                    hasValue: false
-                }
-            }
             $('#node-input-code').typedInput({
                 types: ['str', 'msg', 'flow', 'global', 'jsonata', 'env'],
                 typeField: $('#node-input-codeType')
@@ -40,6 +34,7 @@
                 types: ['str', 'msg', 'flow', 'global', 'jsonata', 'env'],
                 typeField: $('#node-input-labelType')
             });
+            toggleMethod(this.method || 'commissionDevice');
         }
     });
 
@@ -62,9 +57,11 @@
         <select type="text" id="node-input-method" style="width:70%;" onchange="toggleMethod(this.value)">
             <option value="commissionDevice">Commission</option>
             <option value="decommissionDevice">Decommission</option>
-            <option value="openCommissioning">Open Commisioning Window</option>
+            <option value="openCommissioning">Open Commissioning Window</option>
             <option value="listDevices">List Devices</option>
-            <option value="getDevice">Get Devices</option>
+            <option value="getDevice">Get Device</option>
+            <option value="listEndpoints">List Endpoints</option>
+            <option value="describe">Describe Device</option>
             <option value="renameDevice">Rename Device</option>
         </select>
     </div>
@@ -109,6 +106,8 @@
                 document.getElementById("node-matter-label").style.display = "none";
             break;
             case 'getDevice':
+            case 'listEndpoints':
+            case 'describe':
                 document.getElementById("node-matter-code").style.display = "none";
                 document.getElementById("node-matter-deviceid").style.display = "block";
                 document.getElementById("node-matter-label").style.display = "none";
@@ -134,11 +133,13 @@
     <h3>Details</h3>
     This node provides multiple functions for managing devices,
     <ul>
-        <li>You can commision a device into your controller by sending in the pairing code and a label, this will output the device ID</li>
+        <li>You can commission a device into your controller by sending in the pairing code and a label, this will output the device ID</li>
         <li>You can list the IDs of all devices in your controller</li>
         <li>You can get information about a specific device ID</li>
+        <li>You can list the endpoints and clusters on a device</li>
+        <li>You can describe a device to see all endpoints, clusters, attributes, and commands</li>
         <li>You can rename the label for a device</li>
-        <li>You can decommsion(remove) a device from the controller</li>
+        <li>You can decommission (remove) a device from the controller</li>
     </ul>
 
     <dl class="message-properties">
@@ -146,9 +147,9 @@
         <dd> The ID of the Device to manage, for Get, Rename or Decommission </dd>
         
         <dt class="optional">Code<span class="property-type">string </span></dt>
-        <dd> The pairing code when commisioning a device, either a 11/21 digit number or a decoded QR code with the MT: prefix </dd>
+        <dd> The pairing code when commissioning a device, either an 11/21 digit number or a decoded QR code with the MT: prefix </dd>
 
         <dt class="optional">Label<span class="property-type">string </span></dt>
-        <dd> The label to use for a device when commisioning or renaming </dd>
+        <dd> The label to use for a device when commissioning or renaming </dd>
     </dl>
 </script>

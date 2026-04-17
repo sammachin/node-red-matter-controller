@@ -1,5 +1,5 @@
 
-var Models = require( "@matter/main/model")
+const Models = require( "@matter/main/model")
 
 
 function deCap(string) {
@@ -11,9 +11,9 @@ function cap(string) {
 
 
 function commandOptions(clusterID, commandName){
-    data = {}
-    clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
-    cluster = eval('Models.'+clusterName)
+    let data = {}
+    let clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
+    let cluster = Models[clusterName]
     cluster.commands.forEach((cmd, i) => {
         if (cmd.name == cap(commandName)){
             let vars = cluster.commands[i].children.flat()
@@ -39,9 +39,9 @@ function commandOptions(clusterID, commandName){
 }
 
 function attributeOptions(clusterID, attributeName){
-    data = {}
-    clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
-    cluster = eval('Models.'+clusterName)
+    let data = {}
+    let clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
+    let cluster = Models[clusterName]
     cluster.attributes.forEach((attr, i) => {
         if (attr.name == cap(attributeName)){
             data.name = attr.name
@@ -62,11 +62,11 @@ function listClusters(){
 }
 
 function getCommands(clusterList){
-    simpleCommands = {}
+    let simpleCommands = {}
     clusterList.forEach((clusterID) => {
         simpleCommands[clusterID] = []
-        clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
-        cluster = eval('Models.'+clusterName)
+        let clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
+        let cluster = Models[clusterName]
         cluster.commands.forEach((cmd, i) => {
             simpleCommands[clusterID].push(deCap(cmd.name))
         })
@@ -76,11 +76,11 @@ function getCommands(clusterList){
 }
 
 function getAttributes(clusterList){
-    simpleAttributes = {}
+    let simpleAttributes = {}
     clusterList.forEach((clusterID) => {
         simpleAttributes[clusterID] = []
-        clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
-        cluster = eval('Models.'+clusterName)
+        let clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
+        let cluster = Models[clusterName]
         cluster.attributes.forEach((attr, i) => {
             simpleAttributes[clusterID].push(deCap(attr.name))
         })
@@ -105,4 +105,4 @@ function resolveTyped(RED, data, dataType, node, msg){
     })
 }
 
-module.exports = {commandOptions, attributeOptions, deCap, cap, resolveTyped}
+module.exports = {commandOptions, attributeOptions, deCap, cap, resolveTyped, listClusters, getCommands, getAttributes}

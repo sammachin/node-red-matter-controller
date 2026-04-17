@@ -81,6 +81,10 @@ const simpleCommands ={
       'moveToLevel',
       'moveToLevelWithOnOff',
     ],
+    '28': [
+      'moveToLevel',
+      'moveToLevelWithOnOff',
+    ],
     '37': [
       'instantAction',
       'startAction',
@@ -92,9 +96,21 @@ const simpleCommands ={
       'setTimeZone',
       'setDstOffset'
     ],
+    '72': [
+      'pause',
+      'stop',
+      'start',
+      'resume'
+    ],
+    '73': [ 'changeToMode' ],
     '80': [ 'changeToMode' ],
+    '81': [ 'changeToMode' ],
+    '82': [ 'changeToMode' ],
+    '84': [ 'changeToMode' ],
+    '85': [ 'changeToMode' ],
     '86': [ 'setTemperature' ],
     '87': [ 'modifyEnabledAlarms' ],
+    '89': [ 'changeToMode' ],
     '92': [ 'selfTestRequest' ],
     '94': [ 'changeToMode', 'changeToModeResponse' ],
     '95': [ 'setCookingParameters', 'addMoreTime' ],
@@ -128,6 +144,8 @@ const simpleCommands ={
       'clearTargets',
       'getTargetsResponse'
     ],
+    '157': [ 'changeToMode' ],
+    '159': [ 'changeToMode' ],
     '257': [
       'lockDoor',
       'unlockDoor',
@@ -169,9 +187,21 @@ const simpleAttributes = {
       'onTime'
     ],
     '8': [
-      'currentLevel',        
+      'currentLevel',
       'minLevel',
-      'maxLevel',           
+      'maxLevel',
+    ],
+    '28': [
+      'currentLevel',
+      'minLevel',
+      'maxLevel',
+    ],
+    '31': [
+      'acl',
+      'extension',
+      'subjectsPerAccessControlEntry',
+      'targetsPerAccessControlEntry',
+      'accessControlEntriesPerFabric'
     ],
     '37': [  'actionList', 'endpointLists', 'setupUrl' ],
     '43': [  'activeLocale', 'supportedLocales' ],
@@ -204,6 +234,19 @@ const simpleAttributes = {
       'multiPressMax'
     ],
     '69': [  'stateValue' ],
+    '72': [
+      'phaseList',
+      'currentPhase',
+      'operationalState',
+      'operationalError',
+      'countdownTime'
+    ],
+    '73': [
+      'supportedModes',
+      'currentMode',
+      'startUpMode',
+      'onMode'
+    ],
     '74': [
       'supportedDrynessLevels',
       'selectedDrynessLevel'
@@ -254,6 +297,11 @@ const simpleAttributes = {
       'selectedTemperatureLevel',
       'supportedTemperatureLevels'
     ],
+    '87': [
+      'mask',
+      'state',
+      'supported'
+    ],
     '89': [
       'supportedModes',
       'currentMode',
@@ -261,6 +309,12 @@ const simpleAttributes = {
       'onMode'
     ],
     '91': [   'airQuality' ],
+    '93': [
+      'mask',
+      'latch',
+      'state',
+      'supported'
+    ],
     '92': [
       'expressedState',
       'smokeState',
@@ -292,6 +346,29 @@ const simpleAttributes = {
       'supportedWatts',
       'selectedWattIndex',
       'wattRating'
+    ],
+    '97': [
+      'phaseList',
+      'currentPhase',
+      'operationalState',
+      'operationalError',
+      'countdownTime'
+    ],
+    '113': [
+      'condition',
+      'degradationDirection',
+      'changeIndication',
+      'inPlaceIndicator',
+      'lastChangedTime',
+      'replacementProductList'
+    ],
+    '114': [
+      'condition',
+      'degradationDirection',
+      'changeIndication',
+      'inPlaceIndicator',
+      'lastChangedTime',
+      'replacementProductList'
     ],
     '129': [
       'openDuration',
@@ -381,6 +458,18 @@ const simpleAttributes = {
     '156': [
       'availableEndpoints',
       'activeEndpoints'
+    ],
+    '157': [
+      'supportedModes',
+      'currentMode',
+      'startUpMode',
+      'onMode'
+    ],
+    '159': [
+      'supportedModes',
+      'currentMode',
+      'startUpMode',
+      'onMode'
     ],
     '257': [
       'lockState',
@@ -509,6 +598,116 @@ const simpleAttributes = {
     '1030': [
       'occupancy',
       'occupancySensorType'
+    ],
+    '1036': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1037': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1043': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1045': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1066': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1067': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1068': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1069': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1070': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
+    ],
+    '1071': [
+      'measuredValue',
+      'minMeasuredValue',
+      'maxMeasuredValue',
+      'peakMeasuredValue',
+      'averageMeasuredValue',
+      'uncertainty',
+      'measurementUnit',
+      'measurementMedium',
+      'levelValue'
     ],
     '1283': [ 'macAddress', 'linkLocalAddress' ],
   }

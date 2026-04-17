@@ -5,6 +5,7 @@
         category: 'config',
         defaults: {
             name: {value:""},
+            fabricLabel: {value:""},
             networkInterface : {required: true},
             storageLocation: {required: true},
             logLevel: {value: "ERROR"}
@@ -13,32 +14,28 @@
             return this.name||"Controller";
         },
         oneditprepare: function(){
-            var nodeid=this.id
             var selectedInterface = this.networkInterface
             $.get('_mattercontroller/interfaces', function(r) {
                 let interfaces = document.getElementById('node-config-input-networkInterface');
                 r.forEach(i => {
                     interfaces.add(new Option(i, i));
                 });
-                console.log(selectedInterface)
                 if (typeof selectedInterface !== 'undefined'){
-                    console.log('defined')
                     interfaces.value = selectedInterface
                 }
                 
             })
             .error(function(e) {
-                console.log(e.status);
+                console.warn('Matter: Failed to fetch network interfaces:', e.status);
             })
-            console.log(this.storageLocation)
             if (!this.storageLocation){
                 $.get('_mattercontroller/homedir', function(r) {
-                    defaultLocation=(`${r}/.matter`)
+                    let defaultLocation=(`${r}/.matter`)
                     let sLoc = document.getElementById('node-config-input-storageLocation');
                     sLoc.value = defaultLocation
                 })
                 .error(function(e) {
-                    console.log(e.status);
+                    console.warn('Matter: Failed to fetch home directory:', e.status);
                 })
             }
         }
@@ -49,8 +46,12 @@
 
 <script type="text/x-red" data-template-name="mattercontroller">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-fabricLabel">Fabric Label</label>
+        <input type="text" id="node-config-input-fabricLabel" placeholder="My Home">
     </div>
     <div class="form-row">
         <label for="node-config-input-networkInterface">Network interface</label>
@@ -75,5 +76,20 @@
 </script>
 
 <script type="text/x-red" data-help-name="mattercontroller">
-    <p>Controller Object to attach devices to</p>
+    <p>Matter Controller configuration node</p>
+    <h3>Settings</h3>
+    <dl class="message-properties">
+        <dt>Name</dt>
+        <dd>Display name for this controller in the Node-RED editor.</dd>
+        <dt>Fabric Label</dt>
+        <dd>The name your Matter fabric advertises to devices (e.g. "My Home").
+        If left blank, defaults to the controller Name. This is what devices
+        see as the controller identity.</dd>
+        <dt>Network Interface</dt>
+        <dd>The IPv6 network interface to use for mDNS discovery.</dd>
+        <dt>Storage Location</dt>
+        <dd>Path to store Matter commissioning data. Defaults to <code>$HOME/.matter</code>.</dd>
+        <dt>Log Level</dt>
+        <dd>Verbosity of Matter SDK logging.</dd>
+    </dl>
 </script>

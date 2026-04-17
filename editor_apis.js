@@ -1,8 +1,6 @@
 const {commandOptions, attributeOptions} = require('./utils')
 const { BasicInformationCluster } = require( "@matter/main/clusters");
 const os = require('os');
-let listComplete = false
-let deviceList = {}
 
 module.exports =  function(RED) {
 
@@ -16,7 +14,7 @@ RED.httpAdmin.get('/_mattercontroller/interfaces', RED.auth.needsPermission('adm
                 output.push(i)
         }
     }
-    uniqueOutput = output.filter(function(elem, pos) {
+    let uniqueOutput = output.filter(function(elem, pos) {
         return output.indexOf(elem) == pos;
     })
     res.send(uniqueOutput)
@@ -25,48 +23,85 @@ RED.httpAdmin.get('/_mattercontroller/interfaces', RED.auth.needsPermission('adm
 // List Devices
 RED.httpAdmin.get('/_mattercontroller/:id/devices/', RED.auth.needsPermission('admin.write'), function(req,res){
     let ctrl_node = RED.nodes.getNode(req.params.id)
-    listComplete = false
-    deviceList = {}
+    // Use a state object so the polling function can see updates
+    let state = { complete: false, devices: {} }
     if (ctrl_node){
         const nodes = ctrl_node.commissioningController.getCommissionedNodes();
+        if (nodes.length === 0) {
+            res.send(state.devices)
+            return
+        }
+        let pending = nodes.length
+        function markDone() {
+            pending--
+            if (pending <= 0) state.complete = true
+        }
         nodes.forEach(nodeId => {
             ctrl_node.commissioningController.connectNode(nodeId)
             .then((conn) => {
                 let endpoints = conn.getDevices()
                 if (endpoints.length == 1) {  //Simple Device OR Bridge
                     if (endpoints[0].deviceType == 14) { //Bridge
-                        endpoints[0].childEndpoints.forEach((ep) => {
-                            bridgedinfo = ep.getClusterClientById(57)
+                        let bridgeEps = endpoints[0].childEndpoints
+                        if (bridgeEps.length === 0) {
+                            markDone()
+                            return
+                        }
+                        let bridgePending = bridgeEps.length
+                        bridgeEps.forEach((ep) => {
+                            let bridgedinfo = ep.getClusterClientById(57)
                             bridgedinfo.getNodeLabelAttribute()
                             .then((nodeLabel) => {
-                                deviceList[`${nodeId}-${ep.number}`] = nodeLabel
+                                state.devices[`${nodeId}-${ep.number}`] = nodeLabel
+                            })
+                            .catch(() => {
+                                state.devices[`${nodeId}-${ep.number}`] = `(unknown)`
+                            })
+                            .finally(() => {
+                                bridgePending--
+                                if (bridgePending <= 0) markDone()
                             })
                         })
-                        listComplete = true
 
                     } else { //Simple Device
-                        info = conn.getRootClusterClient(BasicInformationCluster)
-                        ep = endpoints[0]
+                        let info = conn.getRootClusterClient(BasicInformationCluster)
+                        let ep = endpoints[0]
                         info.getNodeLabelAttribute()
                         .then((nodeLabel) => {
-                            deviceList[`${nodeId}-${ep.number}`] = nodeLabel
-                            listComplete = true
+                            state.devices[`${nodeId}-${ep.number}`] = nodeLabel
+                        })
+                        .catch(() => {
+                            state.devices[`${nodeId}-${ep.number}`] = `(unknown)`
+                        })
+                        .finally(() => {
+                            markDone()
                         })
                     }
                 } else { //Composed Device
-                    info = conn.getRootClusterClient(BasicInformationCluster)
+                    let info = conn.getRootClusterClient(BasicInformationCluster)
                         info.getNodeLabelAttribute()
                         .then((nodeLabel) => {
                             endpoints.forEach((ep) => {
                                 let name = ep.name.split('-')[1]
-                                deviceList[`${nodeId}-${ep.number}`] = `${nodeLabel}-${name}`
+                                state.devices[`${nodeId}-${ep.number}`] = `${nodeLabel}-${name}`
                             })
-                            listComplete = true
+                        })
+                        .catch(() => {
+                            endpoints.forEach((ep) => {
+                                state.devices[`${nodeId}-${ep.number}`] = `(unknown)`
+                            })
+                        })
+                        .finally(() => {
+                            markDone()
                         })
                 }
             })
+            .catch((error) => {
+                RED.log.warn(`Matter: Could not connect to node ${nodeId}: ${error.message}`)
+                markDone()
+            })
         })
-        listReadytoSend(res)
+        listReadytoSend(res, state, 0)
         
     }
     else {
@@ -74,11 +109,11 @@ RED.httpAdmin.get('/_mattercontroller/:id/devices/', RED.auth.needsPermission('a
     }
 
 })
-function listReadytoSend(res) {
-    if (!listComplete) {
-      setTimeout(listReadytoSend, 100, res)
+function listReadytoSend(res, state, elapsed) {
+    if (!state.complete && elapsed < 30000) {
+      setTimeout(listReadytoSend, 100, res, state, elapsed + 100)
     } else {
-        res.send(deviceList)
+        res.send(state.devices)
     }
 }
 
@@ -92,11 +127,15 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/clusters', RED.auth.needs
         .then((conn) => {
             let ep = conn.getDeviceById(epID)
             let cl = ep.getAllClusterClients()
-            clusterList = {}
+            let clusterList = {}
             cl.forEach((c) => {
                 clusterList[c.id] = c.name
             })
             res.send(clusterList)
+        })
+        .catch((error) => {
+            RED.log.warn(`Matter: Could not list clusters: ${error.message}`)
+            res.sendStatus(502)
         })
     }
     else {
@@ -112,8 +151,12 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/commands', 
         ctrl_node.commissioningController.connectNode(nodeID)
         .then((conn) => {
             let ep = conn.getDeviceById(epID)
-            cmds = ep.getClusterClientById(Number(req.params.clid)).commands
+            let cmds = ep.getClusterClientById(Number(req.params.clid)).commands
             res.send(Object.keys(cmds))
+        })
+        .catch((error) => {
+            RED.log.warn(`Matter: Could not list commands: ${error.message}`)
+            res.sendStatus(502)
         })
     }
     else {
@@ -136,8 +179,12 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes'
         ctrl_node.commissioningController.connectNode(nodeID)
         .then((conn) => {
             let ep = conn.getDeviceById(epID)
-            atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
+            let atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
             res.send(Object.keys(atrs))
+        })
+        .catch((error) => {
+            RED.log.warn(`Matter: Could not list attributes: ${error.message}`)
+            res.sendStatus(502)
         })
     }
     else {
@@ -154,7 +201,7 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes_
         ctrl_node.commissioningController.connectNode(nodeID)
         .then((conn) => {
             let ep = conn.getDeviceById(epID)
-            atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
+            let atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
             let response = []
             Object.keys(atrs).forEach((k) => {
                 if (atrs[k].attribute.writable) {
@@ -162,6 +209,10 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes_
                 }
             })
             res.send(response)
+        })
+        .catch((error) => {
+            RED.log.warn(`Matter: Could not list writable attributes: ${error.message}`)
+            res.sendStatus(502)
         })
     }
     else {
@@ -178,8 +229,12 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/events', RE
         ctrl_node.commissioningController.connectNode(nodeID)
         .then((conn) => {
             let ep = conn.getDeviceById(epID)
-            events = ep.getClusterClientById(Number(req.params.clid)).events
+            let events = ep.getClusterClientById(Number(req.params.clid)).events
             res.send(Object.keys(events))
+        })
+        .catch((error) => {
+            RED.log.warn(`Matter: Could not list events: ${error.message}`)
+            res.sendStatus(502)
         })
     }
     else {
