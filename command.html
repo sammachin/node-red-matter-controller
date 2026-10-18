@@ -20,10 +20,13 @@
         },
         paletteLabel: "Command",
         label: function() {
-            let defaultName = `${this.deviceName} | ${this.command}`
-            return this.name || defaultName || "Command";
+            if (this.name) return this.name
+            if (isRealValue(this.deviceName) && isRealValue(this.command))
+                return this.deviceName + ' | ' + this.command
+            return "Command"
         },
         oneditprepare: function() {
+            var _initDone = false
             $('#node-input-data').typedInput({
                 types: ['json', 'msg', 'flow', 'global', 'jsonata', 'env'],
                 typeField: $('#node-input-dataType')
@@ -41,11 +44,14 @@
             $('#refresh-clusters').on("click", getClusters);
             $('#refresh-commands').on("click", getCommands);
             $('#refresh-sample').on("click", getCommandOpts);
-            $('node-input-command').on("changed", getCommandOpts);
+            $('#node-input-controller').on("change", function() { if (_initDone) getDevices() });
+            $('#node-input-device').on("change", function() { if (_initDone) getClusters() });
+            $('#node-input-cluster').on("change", function() { if (_initDone) getCommands() });
+            $('#node-input-command').on("change", function() { if (_initDone) getCommandOpts() });
+            setTimeout(function() { _initDone = true }, 500);
         },
         oneditsave: function() {
-            let el = document.getElementById('node-input-device');
-            this.deviceName = el.options[el.selectedIndex].innerHTML;
+            this.deviceName = getSelectedText('node-input-device')
         }
     });
 </script>
@@ -102,6 +108,32 @@
 </script>
 
 <script type="text/x-red" data-help-name="mattercommand">
-    <p>Send a Command to a Device</p>
+    <p>Send a command to a Matter device.</p>
+    <h3>Static mode</h3>
+    <p>Select the device, cluster, and command in the editor. Parameters for the
+    command are configured in the <b>Params</b> field.</p>
+    <h3>Dynamic mode</h3>
+    <p>Leave the editor dropdowns blank and pass the target via the incoming message.
+    Any field left blank in the editor will be read from <code>msg</code> instead.
+    This lets a single node send different commands to different devices.</p>
+    <dl class="message-properties">
+        <dt class="optional">device <span class="property-type">string</span></dt>
+        <dd>Device ID in <code>nodeId-endpoint</code> format (e.g. <code>"1234-1"</code>).
+        Used when the editor Device field is blank.</dd>
+        <dt class="optional">cluster <span class="property-type">number</span></dt>
+        <dd>Cluster ID (e.g. <code>6</code> for OnOff). Used when the editor
+        Cluster field is blank.</dd>
+        <dt class="optional">command <span class="property-type">string</span></dt>
+        <dd>Command name (e.g. <code>"toggle"</code>). Used when the editor
+        Command field is blank.</dd>
+        <dt class="optional">payload <span class="property-type">object</span></dt>
+        <dd>Command parameters. Used when the editor Params field is blank.
+        Pass <code>{}</code> or <code>null</code> for commands with no parameters.</dd>
+    </dl>
+    <h3>Output</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string</span></dt>
+        <dd><code>"ok"</code> on success.</dd>
+    </dl>
 </script>
 
