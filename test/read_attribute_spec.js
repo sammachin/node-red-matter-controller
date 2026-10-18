@@ -140,12 +140,15 @@ describe('matterreadattr node', function () {
         });
     });
 
-    // --- Dynamic msg input tests ---
+    // --- Typed (msg) input tests ---
 
-    it('should use msg.device, msg.cluster, msg.attr when config is blank', function (done) {
+    it('should resolve device, cluster, attr from msg when typed as msg', function (done) {
         var flow = [
             { id: 'n1', type: 'matterreadattr', name: 'dynamic-read',
-              controller: 'c1', device: '', cluster: '', attr: '',
+              controller: 'c1',
+              device: 'device', deviceType: 'msg',
+              cluster: 'cluster', clusterType: 'msg',
+              attr: 'attr', attrType: 'msg',
               wires: [['out']] },
             { id: 'c1', type: 'mattercontroller', name: 'ctrl' },
             { id: 'out', type: 'helper' }
@@ -176,10 +179,13 @@ describe('matterreadattr node', function () {
         });
     });
 
-    it('should error when msg.attr is also missing', function (done) {
+    it('should error when a msg-typed attr is missing from the message', function (done) {
         var flow = [
             { id: 'n1', type: 'matterreadattr', name: 'dynamic-read',
-              controller: 'c1', device: '', cluster: '', attr: '' },
+              controller: 'c1',
+              device: 'device', deviceType: 'msg',
+              cluster: 'cluster', clusterType: 'msg',
+              attr: 'attr', attrType: 'msg' },
             { id: 'c1', type: 'mattercontroller', name: 'ctrl' }
         ];
         helper.load([mockController, readAttrNode], flow, function () {

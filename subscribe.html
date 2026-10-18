@@ -9,11 +9,12 @@
         defaults: {
             name: {value:""},
             controller: { value: "", type: "mattercontroller", required: true },
-            device: {value:""},
+            device: {value:"", required:true},
             deviceName: {value:""},
             endpoint: {value:""},
-            cluster: {value:""},
-            attr: {value:""},
+            cluster: {value:"", required:true},
+            clusterName: {value:""},
+            attr: {value:"", required:true},
             simpleMode: {value: "true"},
             topic: {value:""}
         },
@@ -25,27 +26,17 @@
             return "Subscribe"
         },
         oneditprepare: function() {
-            var _initDone = false
-            if (this.device.length != 0){
-                setDevice(this.controller, this.device)
-            } 
-            if (this.cluster.length != 0){
-                setCluster(this.controller, this.device, this.cluster)
-            }
-            if (this.attr.length != 0){
-                setAttribute(this.controller, this.device, this.cluster, this.attr, writable=false);
-            } 
+            restoreSelect('node-input-device', this.device, this.deviceName)
+            restoreSelect('node-input-cluster', this.cluster, this.clusterName)
+            restoreSelect('node-input-attr', this.attr)
             $('#refresh-devices').on("click", getDevices);
             $('#refresh-clusters').on("click", getClusters);
             $('#refresh-attr').on("click", function() { getAttributes(writable=false); } );
-            $('#node-input-controller').on("change", function() { if (_initDone) getDevices() });
-            $('#node-input-device').on("change", function() { if (_initDone) getClusters() });
-            $('#node-input-cluster').on("change", function() { if (_initDone) getAttributes(writable=false) });
-            setTimeout(function() { _initDone = true }, 500);
 
         },
         oneditsave: function() {
             this.deviceName = getSelectedText('node-input-device')
+            this.clusterName = getSelectedText('node-input-cluster')
         }
     });
 </script>

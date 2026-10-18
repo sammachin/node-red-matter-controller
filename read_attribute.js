@@ -1,4 +1,4 @@
-const {cap} = require('./utils')
+const {cap, resolveField} = require('./utils')
 
 
 
@@ -8,83 +8,57 @@ module.exports =  function(RED) {
         const node = this;
         node.controller = RED.nodes.getNode(config.controller);
 
-        // Parse static config if provided; leave undefined for dynamic msg input
-        const hasStaticDevice = config.device && config.device !== "__SELECT__"
-        if (hasStaticDevice) {
-            node._id = BigInt(config.device.split('-')[0])
-            node._ep = config.device.split('-')[1] || 1
-        }
-        const hasStaticCluster = config.cluster && config.cluster !== "__SELECT__"
-        if (hasStaticCluster) {
-            node.cluster = Number(config.cluster)
-        }
-        const hasStaticAttr = config.attr && config.attr !== "__SELECT__"
-        if (hasStaticAttr) {
-            node.attr = cap(config.attr)
-        }
+        this.on('input', async function(msg) {
+            try {
+                if (!node.controller || !node.controller.commissioningController) {
+                    node.error('Matter controller not available — check that the controller is configured and deployed')
+                    return
+                }
 
-        this.on('input', function(msg) {
-            if (!node.controller || !node.controller.commissioningController) {
-                node.error('Matter controller not available — check that the controller is configured and deployed')
-                return
-            }
+                // Resolve device (dropdown literal, or msg/flow/global/env/jsonata)
+                const deviceVal = await resolveField(RED, config.device, config.deviceType, node, msg)
+                if (deviceVal == null || deviceVal === '' || deviceVal === '__SELECT__') {
+                    node.error('Device not configured — set in editor or provide via msg/flow/global')
+                    return
+                }
+                const deviceId = BigInt(String(deviceVal).split('-')[0])
+                const ep = String(deviceVal).split('-')[1] || 1
 
-            // Resolve device: static config or msg.device
-            let deviceId, ep
-            if (hasStaticDevice) {
-                deviceId = node._id
-                ep = node._ep
-            } else if (msg.device && msg.device !== "__SELECT__") {
-                deviceId = BigInt(String(msg.device).split('-')[0])
-                ep = String(msg.device).split('-')[1] || 1
-            } else {
-                node.error('Device not configured — set in editor or pass msg.device')
-                return
-            }
+                // Resolve cluster
+                const clusterVal = await resolveField(RED, config.cluster, config.clusterType, node, msg)
+                if (clusterVal == null || clusterVal === '' || clusterVal === '__SELECT__') {
+                    node.error('Cluster not configured — set in editor or provide via msg/flow/global')
+                    return
+                }
+                const cluster = Number(clusterVal)
+                if (Number.isNaN(cluster)) {
+                    node.error('Cluster is not a valid number')
+                    return
+                }
 
-            // Resolve cluster
-            let cluster
-            if (hasStaticCluster) {
-                cluster = node.cluster
-            } else if (msg.cluster != null) {
-                cluster = Number(msg.cluster)
-            } else {
-                node.error('Cluster not configured — set in editor or pass msg.cluster')
-                return
-            }
+                // Resolve attribute
+                const attrVal = await resolveField(RED, config.attr, config.attrType, node, msg)
+                if (attrVal == null || attrVal === '' || attrVal === '__SELECT__') {
+                    node.error('Attribute not configured — set in editor or provide via msg/flow/global')
+                    return
+                }
+                const attr = cap(attrVal)
 
-            // Resolve attribute
-            let attr
-            if (hasStaticAttr) {
-                attr = node.attr
-            } else if (msg.attr) {
-                attr = cap(msg.attr)
-            } else {
-                node.error('Attribute not configured — set in editor or pass msg.attr')
-                return
-            }
-
-            node.controller.commissioningController.connectNode(deviceId).then((conn) => {
+                const conn = await node.controller.commissioningController.connectNode(deviceId)
                 const epObj = conn.getDeviceById(Number(ep))
                 const clc = epObj.getClusterClientById(cluster)
-                try {
-                    const methodName = `get${attr}Attribute`
-                    let command = clc[methodName]
-                    if (typeof command !== 'function') {
-                        node.error(`Attribute getter '${methodName}' not found on cluster ${cluster}`)
-                        return
-                    }
-                    command.call(clc)
-                    .then((attr_resp) => {
-                        msg.payload = attr_resp
-                        node.send(msg)
-                    })
-                    .catch((e) => node.error(e))
-                } catch (error) {
-                    node.error(error)
+                const methodName = `get${attr}Attribute`
+                const command = clc[methodName]
+                if (typeof command !== 'function') {
+                    node.error(`Attribute getter '${methodName}' not found on cluster ${cluster}`)
+                    return
                 }
-            })
-            .catch((e) => node.error(e))
+                const attr_resp = await command.call(clc)
+                msg.payload = attr_resp
+                node.send(msg)
+            } catch (e) {
+                node.error(e)
+            }
         })
     }
 

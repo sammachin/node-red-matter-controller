@@ -95,14 +95,28 @@ function resolveTyped(RED, data, dataType, node, msg){
            resolve(null)
         } else {
             RED.util.evaluateNodeProperty(data, dataType, node, msg, (err, result) => {
-                if (err) {reject(err) } 
+                if (err) {reject(err) }
                 else {
                     resolve(result)
                 }
              })
         }
-        
+
     })
 }
 
-module.exports = {commandOptions, attributeOptions, deCap, cap, resolveTyped, listClusters, getCommands, getAttributes}
+// Types that should be evaluated against the runtime context (msg/flow/global/etc).
+// Any other type (the editor's custom select keys, undefined, or 'str') is a literal.
+const EVAL_TYPES = ['msg', 'flow', 'global', 'env', 'jsonata']
+
+// Resolve a typed field: evaluate it when its type is one of EVAL_TYPES, otherwise
+// return the stored value verbatim (a dropdown-selected literal or a legacy value
+// with no stored type). Always returns a Promise.
+function resolveField(RED, value, type, node, msg){
+    if (type && EVAL_TYPES.includes(type)){
+        return resolveTyped(RED, value, type, node, msg)
+    }
+    return Promise.resolve(value)
+}
+
+module.exports = {commandOptions, attributeOptions, deCap, cap, resolveTyped, resolveField, listClusters, getCommands, getAttributes}

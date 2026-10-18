@@ -9,42 +9,50 @@
         defaults: {
             name: {value:""},
             controller: { value: "", type: "mattercontroller", required: true },
-            device: {value:""},
+            device: {value:"", required:true},
+            deviceType: {value:"matterDevice"},
             deviceName: {value:""},
             endpoint: {value:""},
-            cluster: {value:""},
-            attr: {value:""},
+            cluster: {value:"", required:true},
+            clusterType: {value:"matterCluster"},
+            clusterName: {value:""},
+            attr: {value:"", required:true},
+            attrType: {value:"matterAttr"},
             simpleMode: {value: "true"}
         },
         paletteLabel: "Read Attribute",
         label: function() {
             if (this.name) return this.name
-            if (isRealValue(this.deviceName) && isRealValue(this.attr))
+            if (this.deviceType === 'matterDevice' && isRealValue(this.deviceName) &&
+                this.attrType === 'matterAttr' && isRealValue(this.attr))
                 return this.deviceName + ' | ' + this.attr
             return "Read Attribute"
         },
         oneditprepare: function() {
-            var _initDone = false
-            if (this.device.length != 0){
-                setDevice(this.controller, this.device)
-            } 
-            if (this.cluster.length != 0){
-                setCluster(this.controller, this.device, this.cluster)
-            }
-            if (this.attr.length != 0){
-                setAttribute(this.controller, this.device, this.cluster, this.attr, writable=false);
-            } 
-            $('#refresh-devices').on("click", getDevices);
-            $('#refresh-clusters').on("click", getClusters);
-            $('#refresh-attr').on("click", function() { getAttributes(writable=false); } );
-            $('#node-input-controller').on("change", function() { if (_initDone) getDevices() });
-            $('#node-input-device').on("change", function() { if (_initDone) getClusters() });
-            $('#node-input-cluster').on("change", function() { if (_initDone) getAttributes(writable=false) });
-            setTimeout(function() { _initDone = true }, 500);
+            initTypedField('node-input-device', 'node-input-deviceType', this.device, this.deviceName, deviceTypeDef(null), deviceNameCache)
+            initTypedField('node-input-cluster', 'node-input-clusterType', this.cluster, this.clusterName, clusterTypeDef(null), clusterNameCache)
+            initTypedField('node-input-attr', 'node-input-attrType', this.attr, null, actionTypeDef('matterAttr', 'Attribute', null))
+            $('#refresh-devices').on("click", getDevicesTyped);
+            $('#refresh-clusters').on("click", getClustersTyped);
+            $('#refresh-attr').on("click", function() { getAttributesTyped(false); } );
+            bindRefreshVisibility('node-input-device', 'matterDevice', ['refresh-devices'])
+            bindRefreshVisibility('node-input-cluster', 'matterCluster', ['refresh-clusters'])
+            bindRefreshVisibility('node-input-attr', 'matterAttr', ['refresh-attr'])
 
         },
         oneditsave: function() {
-            this.deviceName = getSelectedText('node-input-device')
+            if ($('#node-input-device').typedInput('type') === 'matterDevice') {
+                var v = $('#node-input-device').typedInput('value')
+                this.deviceName = deviceNameCache[v] || v
+            } else {
+                this.deviceName = ''
+            }
+            if ($('#node-input-cluster').typedInput('type') === 'matterCluster') {
+                var cv = $('#node-input-cluster').typedInput('value')
+                this.clusterName = clusterNameCache[cv] || cv
+            } else {
+                this.clusterName = ''
+            }
         }
     });
 </script>
@@ -64,51 +72,35 @@
     </div>
     <div class="form-row">
         <label for="node-input-device">Device</label>
-        <select type="text" id="node-input-device" style="width:50%;" >
-        </select>
+        <input type="hidden" id="node-input-deviceType">
+        <input type="text" id="node-input-device" style="width:50%;">
         <a id="refresh-devices" class="btn"><i class="fa fa-refresh"></i></a>
     </div>
-    <!--
-        <div class="form-row">
-        <label for="node-input-endpoint">Endpoint</label>
-        <select type="text" id="node-input-endpoint" style="width:50%;" >
-        </select>
-    </div>
-    -->
     <div class="form-row">
         <label for="node-input-cluster">Cluster</label>
-        <select type="text" id="node-input-cluster" style="width:50%;" >
-        </select>
+        <input type="hidden" id="node-input-clusterType">
+        <input type="text" id="node-input-cluster" style="width:50%;">
         <a id="refresh-clusters" class="btn"><i class="fa fa-refresh"></i></a>
     </div>
     <div class="form-row">
         <label for="node-input-attr">Attribute</label>
-        <select type="text" id="node-input-attr" style="width:50%;" >
-        </select>
+        <input type="hidden" id="node-input-attrType">
+        <input type="text" id="node-input-attr" style="width:50%;">
         <a id="refresh-attr" class="btn"><i class="fa fa-refresh"></i></a>
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="matterreadattr">
     <p>Read an attribute value from a Matter device.</p>
-    <h3>Static mode</h3>
-    <p>Select the device, cluster, and attribute in the editor. Any incoming
-    message triggers the read and the result is output in <code>msg.payload</code>.</p>
-    <h3>Dynamic mode</h3>
-    <p>Leave the editor dropdowns blank and pass the target via the incoming message.
-    Any field left blank in the editor will be read from <code>msg</code> instead.
+    <h3>Device / Cluster / Attribute fields</h3>
+    <p>Each of these fields is a typed input. Choose the dropdown type to pick a
+    value fetched from the controller, or switch the type to <b>msg</b>, <b>flow</b>,
+    <b>global</b>, <b>env</b> or <b>JSONata</b> to supply the value at runtime (for
+    example type <b>msg</b> with <code>device</code> to read <code>msg.device</code>).
     This lets a single node read from different devices and attributes.</p>
-    <dl class="message-properties">
-        <dt class="optional">device <span class="property-type">string</span></dt>
-        <dd>Device ID in <code>nodeId-endpoint</code> format (e.g. <code>"1234-1"</code>).
-        Used when the editor Device field is blank.</dd>
-        <dt class="optional">cluster <span class="property-type">number</span></dt>
-        <dd>Cluster ID (e.g. <code>6</code> for OnOff). Used when the editor
-        Cluster field is blank.</dd>
-        <dt class="optional">attr <span class="property-type">string</span></dt>
-        <dd>Attribute name (e.g. <code>"onOff"</code>). Used when the editor
-        Attribute field is blank.</dd>
-    </dl>
+    <p>A device value is in <code>nodeId-endpoint</code> format (e.g.
+    <code>"1234-1"</code>); the cluster is a numeric cluster ID (e.g. <code>6</code>
+    for OnOff); the attribute is an attribute name (e.g. <code>"onOff"</code>).</p>
     <h3>Output</h3>
     <dl class="message-properties">
         <dt>payload <span class="property-type">any</span></dt>

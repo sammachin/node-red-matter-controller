@@ -154,12 +154,15 @@ describe('matterwriteattr node', function () {
         });
     });
 
-    // --- Dynamic msg input tests ---
+    // --- Typed (msg) input tests ---
 
-    it('should use msg.device, msg.cluster, msg.attr, msg.payload when config is blank', function (done) {
+    it('should resolve device, cluster, attr from msg and write msg.payload', function (done) {
         var flow = [
             { id: 'n1', type: 'matterwriteattr', name: 'dynamic-write',
-              controller: 'c1', device: '', cluster: '', attr: '',
+              controller: 'c1',
+              device: 'device', deviceType: 'msg',
+              cluster: 'cluster', clusterType: 'msg',
+              attr: 'attr', attrType: 'msg',
               data: '', dataType: '', wires: [['out']] },
             { id: 'c1', type: 'mattercontroller', name: 'ctrl' },
             { id: 'out', type: 'helper' }
@@ -193,10 +196,13 @@ describe('matterwriteattr node', function () {
         });
     });
 
-    it('should prefer static config over msg properties', function (done) {
+    it('should ignore msg properties when fields are literal selections', function (done) {
         var flow = [
             { id: 'n1', type: 'matterwriteattr', name: 'static-wins',
-              controller: 'c1', device: '1234-1', cluster: '6', attr: 'onOff',
+              controller: 'c1',
+              device: '1234-1', deviceType: 'matterDevice',
+              cluster: '6', clusterType: 'matterCluster',
+              attr: 'onOff', attrType: 'matterAttr',
               data: '', dataType: '', wires: [['out']] },
             { id: 'c1', type: 'mattercontroller', name: 'ctrl' },
             { id: 'out', type: 'helper' }
@@ -208,16 +214,17 @@ describe('matterwriteattr node', function () {
                 setOnOffAttribute: setOnOff
             });
             var ep = mocks.mockEndpoint(clc);
-            var conn = mocks.mockConnection({ getDeviceById: sinon.stub().returns(ep) });
-            c1.commissioningController = mocks.mockCommissioningController({
-                connectNode: sinon.stub().resolves(conn)
-            });
+            var connectNode = sinon.stub().resolves(
+                mocks.mockConnection({ getDeviceById: sinon.stub().returns(ep) })
+            );
+            c1.commissioningController = mocks.mockCommissioningController({ connectNode: connectNode });
 
             var out = helper.getNode('out');
             out.on('input', function (msg) {
                 try {
                     msg.should.have.property('payload', 'ok');
-                    // Should have used static config attr 'onOff', not msg.attr 'systemMode'
+                    // literal device/attr win over msg: onOff setter on device 1234
+                    connectNode.firstCall.args[0].toString().should.equal('1234');
                     setOnOff.calledOnce.should.be.true();
                     done();
                 } catch (err) {
@@ -226,7 +233,7 @@ describe('matterwriteattr node', function () {
             });
 
             var n1 = helper.getNode('n1');
-            // msg.attr should be ignored because config.attr is set
+            // msg.device/attr must be ignored because the fields are literal selections
             n1.receive({ device: '9999-2', cluster: 513, attr: 'systemMode', payload: 42 });
         });
     });
