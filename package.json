@@ -34,8 +34,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@matter/main": "^0.16.11",
-    "@project-chip/matter.js": "^0.16.11"
+    "@matter/main": "^0.17.9",
+    "@project-chip/matter.js": "^0.17.9"
   },
   "node-red": {
     "version": ">=3.0.0",
