@@ -19,6 +19,8 @@ module.exports =  function(RED) {
         node.started = false
         node.networkInterface = config.networkInterface 
         node.storageLocation = config.storageLocation
+        node.threadName = config.threadName
+        node.tlvs = config.tlvs
         node.fabricLabel = config.fabricLabel || config.name || 'Node-RED Matter Controller'
         switch (config.logLevel) {
             case "FATAL":

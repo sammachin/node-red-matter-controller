@@ -8,6 +8,8 @@
             fabricLabel: {value:""},
             networkInterface : {required: true},
             storageLocation: {required: true},
+            threadName: {value: "", required: false},
+            tlvs: {value: "", required: false},
             logLevel: {value: "ERROR"}
         },
         label: function() {
@@ -57,6 +59,14 @@
         <label for="node-config-input-networkInterface">Network interface</label>
         <select type="text" id="node-config-input-networkInterface" style="width:50%;" >
         </select>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-threadName">Thread Network Name</label>
+        <input type="text" id="node-config-input-threadName" >
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-tlvs">TLVs</label>
+        <input type="text" id="node-config-input-tlvs" >
     </div>
     <div class="form-row">
         <label for="node-config-input-storageLocation">Storage Location</label>
