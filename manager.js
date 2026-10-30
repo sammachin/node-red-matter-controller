@@ -53,6 +53,7 @@ module.exports =  function(RED) {
                     let options = {
                         commissioning :{
                             regulatoryLocation: 2,
+                            regulatoryCountryCode: "XX",
                             ...((node.controller.threadName && node.controller.tlvs) ? {
                                 threadNetwork: {
                                     networkName: node.controller.threadName,
