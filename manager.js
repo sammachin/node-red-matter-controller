@@ -53,7 +53,7 @@ module.exports =  function(RED) {
                     let options = {
                         commissioning :{
                             regulatoryLocation: 2,
-                            ...((node.controller.threadName & node.controller.tlvs) ? {
+                            ...((node.controller.threadName && node.controller.tlvs) ? {
                                 threadNetwork: {
                                     networkName: node.controller.threadName,
                                     operationalDataset: node.controller.tlvs
@@ -68,7 +68,7 @@ module.exports =  function(RED) {
                                   ? { shortDiscriminator :  pcData.shortDiscriminator }
                                   : {},
                             discoveryCapabilities: {
-                                ble : !!(node.controller.tlvs & node.controller.threadName),
+                                ble : !!(node.controller.tlvs && node.controller.threadName),
                             },
                         },
                         passcode: pcData.passcode,
