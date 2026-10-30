@@ -37,6 +37,9 @@
     "@matter/main": "^0.17.9",
     "@project-chip/matter.js": "^0.17.9"
   },
+  "optionalDependencies": {
+    "@matter/nodejs-ble": "^0.17.9"
+  },
   "node-red": {
     "version": ">=3.0.0",
     "nodes": {

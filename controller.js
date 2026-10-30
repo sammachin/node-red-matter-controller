@@ -1,5 +1,6 @@
 const { Environment, Logger, StorageService } = require("@matter/main");
-const { CommissioningController } = require("@project-chip/matter.js")
+const { CommissioningController } = require("@project-chip/matter.js");
+require('@matter/nodejs-ble');
 
 const environment = Environment.default;
 
@@ -40,6 +41,7 @@ module.exports =  function(RED) {
                 break;
         }
         Environment.default.vars.set('mdns.networkInterface', node.networkInterface);
+        Environment.default.vars.set('ble.enable', true);
         let ss = environment.get(StorageService);
         if (node.storageLocation){
             ss.location = node.storageLocation;
