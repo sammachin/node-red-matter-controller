@@ -36,7 +36,7 @@ module.exports =  function(RED) {
             resolveTyped(RED, config.label, config.labelType, node, msg)
             .then((r) => {
                _label = r
-            node.debug(_method, _code, _deviceid, _label)
+            node.debug(`${_method}, ${_code}, ${_deviceid}, ${_label}`)
             // Now that we've resolved all those promises lets actually DO something
             node.status({fill:"blue",shape:"dot",text:"processing"});
             try {
@@ -49,10 +49,17 @@ module.exports =  function(RED) {
                     } else {
                         pcData = ManualPairingCodeCodec.decode(_code);
                     }
-                    node.debug(pcData)
+                    node.debug(JSON.stringify(pcData, null, 2))
                     let options = {
                         commissioning :{
-                            regulatoryLocation: 2
+                            regulatoryLocation: 2,
+                            regulatoryCountryCode: "XX",
+                            ...((node.controller.threadName && node.controller.tlvs) ? {
+                                threadNetwork: {
+                                    networkName: node.controller.threadName,
+                                    operationalDataset: node.controller.tlvs
+                                }
+                            } : {})
                         },
                         discovery: {
                             identifierData:
@@ -62,11 +69,12 @@ module.exports =  function(RED) {
                                   ? { shortDiscriminator :  pcData.shortDiscriminator }
                                   : {},
                             discoveryCapabilities: {
-                                ble : false,
+                                ble : !!(node.controller.tlvs && node.controller.threadName),
                             },
                         },
                         passcode: pcData.passcode,
                     }
+                    node.debug(JSON.stringify(options, null, 2))
                     node.controller.commissioningController.commissionNode(options).then((nodeId) => {
                         node.controller.commissioningController.connectNode(nodeId)
                         .then((conn) => {

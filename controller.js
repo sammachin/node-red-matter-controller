@@ -1,5 +1,6 @@
 const { Environment, Logger, StorageService } = require("@matter/main");
-const { CommissioningController } = require("@project-chip/matter.js")
+const { CommissioningController } = require("@project-chip/matter.js");
+require('@matter/nodejs-ble');
 
 const environment = Environment.default;
 
@@ -19,6 +20,8 @@ module.exports =  function(RED) {
         node.started = false
         node.networkInterface = config.networkInterface 
         node.storageLocation = config.storageLocation
+        node.threadName = config.threadName
+        node.tlvs = config.tlvs
         node.fabricLabel = config.fabricLabel || config.name || 'Node-RED Matter Controller'
         switch (config.logLevel) {
             case "FATAL":
@@ -38,6 +41,7 @@ module.exports =  function(RED) {
                 break;
         }
         Environment.default.vars.set('mdns.networkInterface', node.networkInterface);
+        Environment.default.vars.set('ble.enable', true);
         let ss = environment.get(StorageService);
         if (node.storageLocation){
             ss.location = node.storageLocation;
