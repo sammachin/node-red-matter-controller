@@ -24,6 +24,7 @@ module.exports =  function(RED) {
         node.tlvs = config.tlvs
         node.wifiSsid = config.wifiSsid
         node.wifiCredentials = config.wifiCredentials
+        node.countryCode = config.countryCode || "XX"
         node.fabricLabel = config.fabricLabel || config.name || 'Node-RED Matter Controller'
         switch (config.logLevel) {
             case "FATAL":
