@@ -59,6 +59,12 @@ module.exports =  function(RED) {
                                     networkName: node.controller.threadName,
                                     operationalDataset: node.controller.tlvs
                                 }
+                            } : {}),
+                            ...((node.controller.wifiSsid && node.controller.wifiCredentials) ? {
+                                wifiNetwork: {
+                                    wifiSsid: node.controller.wifiSsid,
+                                    wifiCredentials: node.controller.wifiCredentials
+                                }
                             } : {})
                         },
                         discovery: {
@@ -69,7 +75,7 @@ module.exports =  function(RED) {
                                   ? { shortDiscriminator :  pcData.shortDiscriminator }
                                   : {},
                             discoveryCapabilities: {
-                                ble : !!(node.controller.tlvs && node.controller.threadName),
+                                ble : !!((node.controller.tlvs && node.controller.threadName) || (node.controller.wifiSsid && node.controller.wifiCredentials)),
                             },
                         },
                         passcode: pcData.passcode,
