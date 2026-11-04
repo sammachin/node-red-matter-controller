@@ -3,12 +3,20 @@
 This package is designed to allow users to control Matter devices from Node RED
 
 
-## Limitations IMPORTANT!
-Currently this controller does not support commisioning via Bluetooth, this means that the Matter device must already be connected to the same network as the controller before it can be commisioned. Usually this will require you to connect the device firstly to another Matter controller such as Apple Home, Google Home or Alexa etc.
+## Commisioning IMPORTANT!
+This package now supports direct commisioning of matter devices via BLE on the Node-RED host, it has been tested with a RasberryPi using the internal bluetooth device, you will need to set permission for the node app to access the BLE deivce before starting node-red:
+```
+sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
+```
+The controller then allows you to configure Thread and Wifi network details which will be sent to the device when commisioning via BLE. You can set one or both of these depending on your network.
+You will also need to have the Matter device close to the Pi for BLE commisioning to succeed so bear this in mind with some fixed smart devices like lights.
+
+If your node-red host does not have BLE then  the Matter device must already be connected to the same network as the controller before it can be commisioned. Usually this will require you to connect the device firstly to another Matter controller such as Apple Home, Google Home or Alexa etc.
 You can then add this controller as a 2nd ecosystem, known as Multi-Admin.
 Once the device has been commisioned to the Node-RED controller you can remove it from the inital controller if you wish.
 
-If the device uses Thread rather than WiFi then it will be using the Thread Border Router of the initial controller and will need that on the network in order to communicate with Node-RED.
+If the device uses Thread rather than WiFi then it will be using your Thread Border Router or the initial controller and will need that on the same network in order to communicate with Node-RED.
+You may need to enable ipv6 route adveritsment on the Node-RED device to communicate with the Thread IPv6 network.
 
 ## Use
 
@@ -36,7 +44,7 @@ The network interface should be set to whichever interface your machine has on t
 
 This Device Management node will expect 2 values to be sent to it in order to commision the device.
 The first is the paring code, this is either an 11/21 digit number or a decoded QR code from the device (the QR code will have an MT: prefix and this should form part of the input)
-See the note above about commisioning devices to another controller first, you will need to get the pairing code from the initial controller you cannot re-use the code printed on the device for a 2nd controller.
+
 
 The 2nd input is the device label, this is a string you use to recognise the device in the other nodes dropdown lists.
 You can rename a device later using the rename method of the node.
