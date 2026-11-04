@@ -10,6 +10,9 @@
             storageLocation: {required: true},
             threadName: {value: "", required: false},
             tlvs: {value: "", required: false},
+            wifiSsid: {value: "", required: false},
+            wifiCredentials: {value: "", required: false},
+            countryCode: {value: "XX", required: false},
             logLevel: {value: "ERROR"}
         },
         label: function() {
@@ -67,6 +70,18 @@
     <div class="form-row">
         <label for="node-config-input-tlvs">TLVs</label>
         <input type="text" id="node-config-input-tlvs" >
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-wifiSsid">WiFi SSID</label>
+        <input type="text" id="node-config-input-wifiSsid" >
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-wifiCredentials">WiFi Password</label>
+        <input type="password" id="node-config-input-wifiCredentials" >
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-countryCode">Country Code</label>
+        <input type="text" id="node-config-input-countryCode" style="width:50%;" placeholder="XX" >
     </div>
     <div class="form-row">
         <label for="node-config-input-storageLocation">Storage Location</label>

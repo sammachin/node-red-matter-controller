@@ -53,11 +53,17 @@ module.exports =  function(RED) {
                     let options = {
                         commissioning :{
                             regulatoryLocation: 2,
-                            regulatoryCountryCode: "XX",
+                            regulatoryCountryCode: node.controller.countryCode || "XX",
                             ...((node.controller.threadName && node.controller.tlvs) ? {
                                 threadNetwork: {
                                     networkName: node.controller.threadName,
                                     operationalDataset: node.controller.tlvs
+                                }
+                            } : {}),
+                            ...((node.controller.wifiSsid && node.controller.wifiCredentials) ? {
+                                wifiNetwork: {
+                                    wifiSsid: node.controller.wifiSsid,
+                                    wifiCredentials: node.controller.wifiCredentials
                                 }
                             } : {})
                         },
@@ -69,7 +75,7 @@ module.exports =  function(RED) {
                                   ? { shortDiscriminator :  pcData.shortDiscriminator }
                                   : {},
                             discoveryCapabilities: {
-                                ble : !!(node.controller.tlvs && node.controller.threadName),
+                                ble : !!((node.controller.tlvs && node.controller.threadName) || (node.controller.wifiSsid && node.controller.wifiCredentials)),
                             },
                         },
                         passcode: pcData.passcode,

@@ -14,16 +14,16 @@ function commandOptions(clusterID, commandName){
     let data = {}
     let clusterName = Models.MatterModel.standard.get(Models.ClusterModel, Number(clusterID)).name
     let cluster = Models[clusterName]
-    cluster.commands.forEach((cmd, i) => {
+    cluster.commands.forEach((cmd) => {
         if (cmd.name == cap(commandName)){
-            let vars = cluster.commands[i].children.flat()
+            let vars = (cmd.children || []).flat()
             vars.forEach(f => {
                 let key = deCap(f.name)
                 let val
-                if ('default' in f){
+                if ('default' in f && f.default !== undefined){
                     val = f.default
-                } else if 
-                ('constraint' in f && f.constraint != 'all'){
+                } else if
+                ('constraint' in f && `${f.constraint}` != 'all'){
                     val = `[${f.constraint}]`
                 } else if 
                 ('type' in f){
