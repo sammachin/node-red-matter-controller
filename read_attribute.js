@@ -44,7 +44,8 @@ module.exports =  function(RED) {
                 }
                 const attr = cap(attrVal)
 
-                const conn = await node.controller.commissioningController.connectNode(deviceId)
+                await node.controller.whenStarted()
+                const conn = await node.controller.getConnection(deviceId)
                 const epObj = conn.getDeviceById(Number(ep))
                 const clc = epObj.getClusterClientById(cluster)
                 const methodName = `get${attr}Attribute`

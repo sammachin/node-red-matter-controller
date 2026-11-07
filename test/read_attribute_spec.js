@@ -45,6 +45,7 @@ describe('matterreadattr node', function () {
         ];
         helper.load([mockController, readAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ payload: {} });
@@ -88,6 +89,7 @@ describe('matterreadattr node', function () {
         ];
         helper.load([mockController, readAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient({
                 getOnOffAttribute: sinon.stub().resolves(true)
             });
@@ -120,6 +122,7 @@ describe('matterreadattr node', function () {
         ];
         helper.load([mockController, readAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient();
             var ep = mocks.mockEndpoint(clc);
             var conn = mocks.mockConnection({ getDeviceById: sinon.stub().returns(ep) });
@@ -155,6 +158,7 @@ describe('matterreadattr node', function () {
         ];
         helper.load([mockController, readAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient({
                 getOnOffAttribute: sinon.stub().resolves(true)
             });
@@ -190,6 +194,7 @@ describe('matterreadattr node', function () {
         ];
         helper.load([mockController, readAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ device: '1234-1', cluster: 6 });

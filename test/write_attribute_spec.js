@@ -47,6 +47,7 @@ describe('matterwriteattr node', function () {
         ];
         helper.load([mockController, writeAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ payload: 'true' });
@@ -91,6 +92,7 @@ describe('matterwriteattr node', function () {
         ];
         helper.load([mockController, writeAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var setOnOff = sinon.stub().resolves('done');
             var clc = mocks.mockClusterClient({
                 setOnOffAttribute: setOnOff
@@ -127,6 +129,7 @@ describe('matterwriteattr node', function () {
         ];
         helper.load([mockController, writeAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var setOnOff = sinon.stub().resolves('done');
             var clc = mocks.mockClusterClient({
                 setOnOffAttribute: setOnOff
@@ -169,6 +172,7 @@ describe('matterwriteattr node', function () {
         ];
         helper.load([mockController, writeAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var setSystemModeAttribute = sinon.stub().resolves('done');
             var clc = mocks.mockClusterClient({
                 setSystemModeAttribute: setSystemModeAttribute
@@ -209,6 +213,7 @@ describe('matterwriteattr node', function () {
         ];
         helper.load([mockController, writeAttrNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var setOnOff = sinon.stub().resolves('done');
             var clc = mocks.mockClusterClient({
                 setOnOffAttribute: setOnOff
