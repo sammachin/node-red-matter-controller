@@ -18,7 +18,51 @@ module.exports =  function(RED) {
         RED.nodes.createNode(this, config);
         const node = this;
         node.started = false
-        node.networkInterface = config.networkInterface 
+        // Shared, de-duplicated connections keyed by node id. A Matter node may
+        // expose several endpoints, so multiple runtime nodes (subscribe/event/
+        // command/read/write) can target the same node id. connectNode() must be
+        // called once per node id and the resulting PairedNode reused — calling it
+        // concurrently for the same id makes matter.js throw
+        // "PairedNode unavailable due to initialization error" on the loser of the race.
+        node._connections = new Map()
+        node._waitTimers = new Set()
+
+        // Return a cached Promise<PairedNode> for a node id, connecting once and
+        // sharing that connection with every caller. A failed connect is evicted
+        // so a later call can retry.
+        node.getConnection = function(id) {
+            const key = String(id)
+            let p = node._connections.get(key)
+            if (!p) {
+                p = node.commissioningController.connectNode(id)
+                    .catch((err) => {
+                        node._connections.delete(key)
+                        throw err
+                    })
+                node._connections.set(key, p)
+            }
+            return p
+        }
+
+        // Resolve once the controller has finished starting (CommissioningController
+        // .start() has completed). Lets input-driven nodes wait instead of throwing
+        // "Controller instance not yet started" when triggered during startup.
+        node.whenStarted = function(timeoutMs = 30000) {
+            if (node.started) return Promise.resolve()
+            return new Promise((resolve, reject) => {
+                const start = Date.now()
+                const check = () => {
+                    if (node.started) return resolve()
+                    if (Date.now() - start >= timeoutMs) {
+                        return reject(new Error('Matter controller did not start in time'))
+                    }
+                    const t = setTimeout(() => { node._waitTimers.delete(t); check() }, 100)
+                    node._waitTimers.add(t)
+                }
+                check()
+            })
+        }
+        node.networkInterface = config.networkInterface
         node.storageLocation = config.storageLocation
         node.threadName = config.threadName
         node.tlvs = config.tlvs
@@ -91,6 +135,9 @@ module.exports =  function(RED) {
 
         node.on('close', function(done) {
             node.started = false
+            for (const t of node._waitTimers) { clearTimeout(t) }
+            node._waitTimers.clear()
+            node._connections.clear()
             if (node.commissioningController) {
                 node.commissioningController.close()
                     .then(() => done())

@@ -23,7 +23,7 @@ module.exports =  function(RED) {
         node.topic = config.topic
 
         function subscribe(node){
-            node.controller.commissioningController.connectNode(node._id)
+            node.controller.getConnection(node._id)
             .then((conn) => {
                 const ep = conn.getDeviceById(Number(node._ep))
                 const clc = ep.getClusterClientById(Number(node.cluster))

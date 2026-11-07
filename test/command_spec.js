@@ -47,6 +47,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ payload: {} });
@@ -70,6 +71,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ payload: {} });
@@ -114,6 +116,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient();
             var ep = mocks.mockEndpoint(clc);
             var conn = mocks.mockConnection({ getDeviceById: sinon.stub().returns(ep) });
@@ -147,6 +150,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var moveToLevel = sinon.stub().resolves();
             var clc = mocks.mockClusterClient({
                 commands: { moveToLevel: moveToLevel }
@@ -183,6 +187,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient();
             var ep = mocks.mockEndpoint(clc);
             var conn = mocks.mockConnection({ getDeviceById: sinon.stub().returns(ep) });
@@ -212,6 +217,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController({
                 connectNode: sinon.stub().rejects(new Error('connection failed'))
             });
@@ -244,6 +250,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var toggle = sinon.stub().resolves();
             var clc = mocks.mockClusterClient({ commands: { toggle: toggle } });
             var ep = mocks.mockEndpoint(clc);
@@ -281,6 +288,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var toggle = sinon.stub().resolves();
             var clc = mocks.mockClusterClient({ commands: { toggle: toggle } });
             var ep = mocks.mockEndpoint(clc);
@@ -320,6 +328,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var clc = mocks.mockClusterClient();
             var ep = mocks.mockEndpoint(clc);
             var connectNode = sinon.stub().resolves(
@@ -357,6 +366,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             var moveToLevel = sinon.stub().resolves();
             var clc = mocks.mockClusterClient({ commands: { moveToLevel: moveToLevel } });
             var ep = mocks.mockEndpoint(clc);
@@ -394,6 +404,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ device: '1234-1', payload: {} });
@@ -420,6 +431,7 @@ describe('mattercommand node', function () {
         ];
         helper.load([mockController, commandNode], flow, function () {
             var c1 = helper.getNode('c1');
+            c1.started = true;
             c1.commissioningController = mocks.mockCommissioningController();
             var n1 = helper.getNode('n1');
             n1.receive({ device: '1234-1', cluster: 'notanumber', command: 'toggle', payload: {} });
