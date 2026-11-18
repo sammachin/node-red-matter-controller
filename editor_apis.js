@@ -204,7 +204,9 @@ RED.httpAdmin.get('/_mattercontroller/:cid/device/:did/cluster/:clid/attributes_
             let atrs = ep.getClusterClientById(Number(req.params.clid)).attributes
             let response = []
             Object.keys(atrs).forEach((k) => {
-                if (atrs[k].attribute.writable) {
+                // matter.js 0.17+ exposes writability on the schema model
+                const a = atrs[k].attribute
+                if (a?.schema?.writable ?? a?.writable) {
                     response.push(k)
                 }
             })

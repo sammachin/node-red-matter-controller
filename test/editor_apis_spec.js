@@ -321,9 +321,9 @@ describe('editor_apis.js HTTP endpoints', function () {
                 var ep = {
                     getClusterClientById: sinon.stub().returns({
                         attributes: {
-                            onOff: { attribute: { writable: false } },
-                            onTime: { attribute: { writable: true } },
-                            offWaitTime: { attribute: { writable: true } }
+                            onOff: { attribute: { schema: { writable: false } } },
+                            onTime: { attribute: { schema: { writable: true } } },
+                            offWaitTime: { attribute: { schema: { writable: true } } }
                         }
                     })
                 };
